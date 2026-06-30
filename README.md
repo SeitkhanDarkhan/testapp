@@ -1,110 +1,214 @@
-# TestApp — Авторизация модулі
+# TestApp — Онлайн тестілеу платформасы / Платформа онлайн-тестирования
 
-## Файл құрылымы
+> 🇰🇿 Қазақша төменде | 🇷🇺 Русская версия ниже
+
+---
+
+## 🇰🇿 Қазақша
+
+### 📋 Сипаттамасы
+
+**TestApp** — оқушылар мен мұғалімдерге арналған, Flutter және Firebase негізінде жасалған онлайн тестілеу қосымшасы. Үш рөлмен жұмыс істейді: **оқушы**, **мұғалім**, **админ**.
+
+### ✨ Негізгі мүмкіндіктер
+
+| Рөл | Мүмкіндіктер |
+|---|---|
+| 👤 **Оқушы** | Тест тізімін көру, тест тапсыру, нәтижелерін көру, статистика |
+| 👩‍🏫 **Мұғалім** | Тест жасау, сұрақтар қосу, тесттерді басқару, нәтижелерді бақылау |
+| 🛠️ **Админ** | Жүйені басқару, мұғалімдер қосу |
+
+### 🔐 Авторизация
+- Email/Пароль арқылы кіру (валидация + қазақша қате хабарламалары)
+- Google Sign-In
+- Тіркелу (аты-жөні, email, пароль, рөл таңдау)
+- Пароль қалпына келтіру
+- Auth күйіне байланысты автоматты бағыттау (redirect)
+
+### 🧩 Тест жүйесі
+- Сұрақ түрлері: бір жауапты таңдау, көп жауапты таңдау, ия/жоқ (true/false)
+- Санат бойынша бөлу: математика, қазақ тілі, орыс тілі, ағылшын тілі, тарих, жаратылыстану, басқа
+- Тест статусы: белсенді / жоба / мұрағат
+- Уақыт шектеуі, ұпай жүйесі, баға есептеу (5/4/3/2)
+- Нәтиже бойынша рейтинг
+
+### 🛠️ Технологиялар
+
+- **Flutter** (Dart) — кросс-платформалық frontend
+- **Firebase**:
+  - `firebase_auth` — авторизация
+  - `cloud_firestore` — деректер базасы
+- **flutter_riverpod** — state management
+- **go_router** — навигация, auth-қа байланысты автоматты redirect
+- **google_sign_in** — Google арқылы кіру
+- **gson** аналогы ретінде Dart `Map`/`fromMap`/`toMap` арқылы сериализация
+
+### 📂 Жоба құрылымы
 
 ```
 lib/
-├── main.dart                          # Қосымшаның кіру нүктесі
+├── main.dart                          # Кіру нүктесі
+├── firebase_options.dart              # Firebase конфигурациясы
+├── seed_tests.dart                    # Тест деректерін алдын ала толтыру
 ├── core/
-│   ├── theme/
-│   │   └── app_theme.dart             # Түстер, стильдер, тақырып
-│   └── routes/
-│       └── app_router.dart            # GoRouter навигациясы
+│   ├── theme/app_theme.dart           # Түстер, стильдер
+│   └── routes/app_router.dart         # GoRouter маршруттары
 └── features/
-    └── auth/
-        ├── models/
-        │   └── app_user.dart          # Пайдаланушы модельі + рөлдер
-        ├── providers/
-        │   └── auth_provider.dart     # Firebase Auth + Riverpod
-        └── screens/
-            ├── login_screen.dart      # Кіру экраны
-            ├── register_screen.dart   # Тіркелу экраны
-            └── forgot_password_screen.dart  # Пароль қалпына келтіру
+    ├── auth/
+    │   ├── models/app_user.dart       # Пайдаланушы моделі + рөлдер
+    │   ├── providers/auth_provider.dart
+    │   └── screens/                   # login, register, forgot-password
+    ├── home/screens/home_screen.dart  # Рөл бойынша бағыттаушы экран
+    ├── student/screens/student_home_screen.dart
+    ├── teacher/
+    │   ├── providers/create_test_provider.dart
+    │   └── screens/                   # teacher_home, create_test, create_test_questions
+    ├── admin/screens/admin_home_screen.dart
+    └── test/
+        ├── models/                    # test_model, question_model
+        ├── providers/                 # test, test_session, test_taking
+        └── screens/                   # test_detail, test_taking, test_result
 ```
 
-## Баптау қадамдары
+### 🚀 Орнату және іске қосу
 
-### 1. Firebase жобасын жасау
+#### 1. Firebase жобасын құру
 1. [Firebase Console](https://console.firebase.google.com/) ашыңыз
-2. "Add project" → жобаның атын енгізіңіз (мысалы: `testapp-kz`)
-3. Authentication → Sign-in method → **Email/Password** қосыңыз
-4. Authentication → Sign-in method → **Google** қосыңыз
-5. Cloud Firestore → Create database (production mode)
+2. Жаңа жоба жасаңыз
+3. Authentication → Sign-in method → **Email/Password** және **Google** қосыңыз
+4. Cloud Firestore → деректер базасын жасаңыз
 
-### 2. Flutter қосымшасын Firebase-ке байлау
+#### 2. Flutter қосымшасын Firebase-ке байлау
 ```bash
-# FlutterFire CLI орнату
 dart pub global activate flutterfire_cli
-
-# Firebase конфигурациясын жасау
 flutterfire configure
 ```
 Бұл `lib/firebase_options.dart` файлын автоматты жасайды.
 
-### 3. main.dart-қа firebase_options қосу
-```dart
-import 'firebase_options.dart';
-
-await Firebase.initializeApp(
-  options: DefaultFirebaseOptions.currentPlatform,
-);
-```
-
-### 4. Пакеттерді орнату
+#### 3. Пакеттерді орнату және іске қосу
 ```bash
 flutter pub get
-```
-
-### 5. Іске қосу
-```bash
 flutter run
 ```
 
-## Firestore деректер құрылымы
+### 🗂️ Firestore деректер құрылымы
 
 ```
-users/
-  {uid}/
-    uid: string
-    email: string
-    displayName: string
-    photoUrl: string | null
-    role: "student" | "teacher" | "admin"
-    createdAt: timestamp
+users/{uid}
+  uid, email, displayName, photoUrl, role ("student"|"teacher"|"admin"), createdAt
+
+tests/{testId}
+  title, description, teacherId, teacherName, category, status,
+  questionCount, durationMinutes, maxScore, createdAt, allowedStudentIds
+
+questions/{questionId}
+  testId, text, type, options[], correctAnswerIds[], points, orderIndex
+
+results/{resultId}
+  testId, testTitle, studentId, score, maxScore, durationSeconds, completedAt
 ```
 
-## Firestore қауіпсіздік ережелері
+### ⚠️ Белгілі шектеулер
+- Кейбір мұғалім/админ функциялары әлі дайын емес: тестті өңдеу, толық нәтиже статистикасы, мұғалім қосу — бұл маршруттар "Жақында" деп белгіленген
+- README автоматты түрде жаңартылмайды — код өзгерген сайын қолмен қадағалау қажет
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /users/{userId} {
-      // Тек өз деректерін оқи және жаза алады
-      allow read, write: if request.auth != null 
-                         && request.auth.uid == userId;
-      // Админ барлығын оқи алады
-      allow read: if request.auth != null 
-                  && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-  }
-}
+---
+
+## 🇷🇺 Русская версия
+
+### 📋 Описание
+
+**TestApp** — приложение для онлайн-тестирования учеников и учителей, построенное на Flutter и Firebase. Поддерживает три роли: **ученик**, **учитель**, **админ**.
+
+### ✨ Основные возможности
+
+| Роль | Возможности |
+|---|---|
+| 👤 **Ученик** | Просмотр списка тестов, прохождение теста, просмотр результатов, статистика |
+| 👩‍🏫 **Учитель** | Создание тестов, добавление вопросов, управление тестами, отслеживание результатов |
+| 🛠️ **Админ** | Управление системой, добавление учителей |
+
+### 🔐 Авторизация
+- Вход по Email/Паролю (валидация + сообщения об ошибках на казахском)
+- Google Sign-In
+- Регистрация (имя, email, пароль, выбор роли)
+- Восстановление пароля
+- Автоматический redirect в зависимости от состояния авторизации
+
+### 🧩 Система тестирования
+- Типы вопросов: одиночный выбор, множественный выбор, да/нет (true/false)
+- Категории: математика, казахский язык, русский язык, английский язык, история, естествознание, другое
+- Статус теста: активный / черновик / архив
+- Ограничение по времени, система баллов, расчёт оценки (5/4/3/2)
+- Рейтинг по результатам
+
+### 🛠️ Технологии
+
+- **Flutter** (Dart) — кроссплатформенный frontend
+- **Firebase**:
+  - `firebase_auth` — авторизация
+  - `cloud_firestore` — база данных
+- **flutter_riverpod** — управление состоянием
+- **go_router** — навигация с авто-редиректом по состоянию авторизации
+- **google_sign_in** — вход через Google
+- Сериализация моделей через `fromMap`/`toMap` на чистом Dart
+
+### 📂 Структура проекта
+
+```
+lib/
+├── main.dart                          # Точка входа
+├── firebase_options.dart              # Конфигурация Firebase
+├── seed_tests.dart                    # Предзаполнение тестовых данных
+├── core/
+│   ├── theme/app_theme.dart           # Цвета, стили
+│   └── routes/app_router.dart         # Маршруты GoRouter
+└── features/
+    ├── auth/                          # Авторизация (login, register, forgot-password)
+    ├── home/screens/home_screen.dart  # Экран-роутер по ролям
+    ├── student/screens/student_home_screen.dart
+    ├── teacher/                       # teacher_home, create_test, create_test_questions
+    ├── admin/screens/admin_home_screen.dart
+    └── test/                          # Модели, провайдеры и экраны тестирования
 ```
 
-## Авторизация мүмкіндіктері
+### 🚀 Установка и запуск
 
-| Мүмкіндік | Сипаттама |
-|-----------|-----------|
-| Email/Пароль кіру | Валидация + қате хабарламалары қазақшада |
-| Google Sign-In | Бір басу арқылы кіру |
-| Тіркелу | Аты-жөні, email, пароль, рөл таңдау |
-| Пароль қалпына келтіру | Email арқылы сілтеме жіберу |
-| Автоматты навигация | Auth күйіне байланысты redirect |
-| Анимация | Fade + slide кіру анимациясы |
+#### 1. Создание Firebase-проекта
+1. Откройте [Firebase Console](https://console.firebase.google.com/)
+2. Создайте новый проект
+3. Authentication → Sign-in method → включите **Email/Password** и **Google**
+4. Cloud Firestore → создайте базу данных
 
-## Келесі қадам
+#### 2. Подключение Flutter-приложения к Firebase
+```bash
+dart pub global activate flutterfire_cli
+flutterfire configure
+```
+Это автоматически создаст файл `lib/firebase_options.dart`.
 
-Авторизациядан кейін **Басты бет (Home)** жасауға кірісеміз:
-- Оқушы: тест тізімі
-- Мұғалім: тест жасаушы панель
-- Админ: басқару панелі
+#### 3. Установка пакетов и запуск
+```bash
+flutter pub get
+flutter run
+```
+
+### 🗂️ Структура данных в Firestore
+
+```
+users/{uid}
+  uid, email, displayName, photoUrl, role ("student"|"teacher"|"admin"), createdAt
+
+tests/{testId}
+  title, description, teacherId, teacherName, category, status,
+  questionCount, durationMinutes, maxScore, createdAt, allowedStudentIds
+
+questions/{questionId}
+  testId, text, type, options[], correctAnswerIds[], points, orderIndex
+
+results/{resultId}
+  testId, testTitle, studentId, score, maxScore, durationSeconds, completedAt
+```
+
+### ⚠️ Известные ограничения
+- Часть функций учителя/админа ещё не реализована: редактирование теста, полная статистика результатов, добавление учителя — эти маршруты помечены как "Скоро" (`Жақында`)
