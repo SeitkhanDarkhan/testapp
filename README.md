@@ -9,6 +9,19 @@
 ### 📋 Сипаттамасы
 
 **TestApp** — оқушылар мен мұғалімдерге арналған, Flutter және Firebase негізінде жасалған онлайн тестілеу қосымшасы. Үш рөлмен жұмыс істейді: **оқушы**, **мұғалім**, **админ**.
+## 🖼️ Скриншоттар / Screenshots
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/fa72b571-e802-4848-b28d-6d5799869bca" width="200" />
+  <img src="https://github.com/user-attachments/assets/9a50b994-8759-473a-86a3-1f5f9be6302f" width="200" />
+  <img src="https://github.com/user-attachments/assets/4d6d0c8e-1226-46cd-9587-d700c9cf7a7a" width="200" />
+  <img src="https://github.com/user-attachments/assets/49315f14-ab3e-4de8-af90-16a8e9f6c851" width="200" />
+  <img src="https://github.com/user-attachments/assets/eb210788-98c6-49ed-b6ef-b199d92d2d20" width="200" />
+</p>
+
+<p align="center">
+  <sub>Кіру · Басты бет · Тест туралы · Тест өту · Нәтиже</sub>
+</p>
 
 ### ✨ Негізгі мүмкіндіктер
 
